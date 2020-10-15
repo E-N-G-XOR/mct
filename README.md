@@ -39,5 +39,16 @@
 
 By using github actions we can build and push the images automatically every time there is an update to the repository. The image tag is 10 characters of the commit hash, so we can track images version with the code updates...
 
+Images will be taged like so....
+
+This repository contains 5 tag(s).
+TAG   f6fc7b29
+      latest
+      f35480b0
+      190c3274
+      3784adbf
+
+The latest tag will always have the current one.... which is the short version of the git commit. So we can track the image to the code change...
+
 
  
