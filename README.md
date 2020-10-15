@@ -39,9 +39,8 @@
 
 By using github actions we can build and push the images automatically every time there is an update to the repository. The image tag is 10 characters of the commit hash, so we can track images version with the code updates...
 
-Images will be taged like so....
+Images will be taged like so.... (https://hub.docker.com/repository/docker/englotus/mct-web)
 
-This repository contains 5 tag(s).
 TAG   f6fc7b29
       latest
       f35480b0
@@ -51,4 +50,12 @@ TAG   f6fc7b29
 The latest tag will always have the current one.... which is the short version of the git commit. So we can track the image to the code change...
 
 
+ # Deployment to the cloud
+
+ we can use app-deploy.yml to push this image to a k8s cluster. As it is a service and deployment, it doesn't warrent a helm chart.
+
+ # Improvements
+
+ 1. Add terrafrom to deloy k8s cluster
+ 2. make a helm chat if the app gets bigger...
  
