@@ -1,0 +1,37 @@
+name: MCT Docker Image CI
+
+on:
+  push:
+    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+      - name: Declare some variables
+        id: vars
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha_short::$(echo $GITHUB_SHA | cut -c1-8)"
+      - name: Build
+        run: docker build -t app .
+      - name: Tags
+        run: |
+          docker tag app ${{ secrets.DOCKER_USER }}/mct-web:${{ steps.vars.outputs.sha_short }}
+          docker tag app ${{ secrets.DOCKER_USER }}/mct-web:latest
+      - name: Push
+        run: |
+          docker push ${{ secrets.DOCKER_USER }}/mct-web:${{ steps.vars.outputs.sha_short }}
+          docker push ${{ secrets.DOCKER_USER }}/mct-web:latest
