@@ -1,0 +1,15 @@
+I was recently asked to rebuild a pipeline for deploying applications into our k8s environments. The existing pipeline starts with a gitlab servers, which builds an docker envirionment for testing the application. Intergration and e2e testing is done on the applicaiton and then a jenkins job is triggered to package the application in a docker hardened container and deploy it to the k8s cluster. 
+
+The major challenge I faced was that I wanted to have just one simplified pipeline to do the testing and deployment of the image. There was only application testing being done and I wanted to put in place container testing as well. I spent some time sorting through the pipelines and choose to deploy the testing into a k8s namespace so we could build a container once and run application and security tests on it.
+
+I chose to dump the entire pipeline and use github actions to deploy docker images for every update to the production branch and for every release, deploy a packaged application to a k8s cluster. I setup terraform cloud to handle the testing environment deployment on a seperate cluster in the dev environment. It would allow for the automation and tracking of changes using cloud tooling. It was a success! That is after I automated the thing!
+
+I had several challenges to overcome.
+
+1. the storing of hardcoded variables - I used artifacts to pass the items I needed from one job to the next removing the need to pass a HUGE string of variables from one pipeline to the next.  Having one pipeline at the end was also handy...
+
+2. Storing of secrets - I chose to store the secrets I needed in github, it was handy to call them and I didn't have to add the complexity of adding vault configuration.
+
+3. Sorting the mess that was the testing environment. By defining it in terraform, I was able to spin up the environment multiple times and run testing in parallel and speeding up the build times. It also allowed me to clean it up when I was done.
+
+4. We had no security scanning on the containers - I used aqua security scanner to report on the container integrety and prove that we were shipping hardened images that were as bullet proof as we can make them! 

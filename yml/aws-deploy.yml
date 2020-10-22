@@ -1,0 +1,85 @@
+name: "AWS MCT APP Deployment"
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+
+  Deploy:
+      
+    name: "Deploy"
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build Image
+        uses: "actions/docker/cli@c08a5fc9e0286844156fefff2c141072048141f6"
+        env:
+          IMAGE_URI: "xxxxxxxx.dkr.ecr.ca-central-1.amazonaws.com/mct:latest"
+        script: |
+          cd app
+          docker build -t $IMAGE_URI .
+
+      - name: ECR Login
+        uses: "actions/aws/cli@51b5c9b60da75d1d3f97ff91ed2e4efc19dd5474"
+        needs: "Build Image"
+        env:
+          AWS_DEFAULT_REGION: "ca-central-1"
+          AWS_REGION: "$AWS_DEFAULT_REGION"
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+        script: |
+          aws ecr get-login --no-include-email | sh
+
+      - name: Push ECR
+        uses: "actions/docker/cli@c08a5fc9e0286844156fefff2c141072048141f6"
+        needs: "ECR Login"
+        env:
+          AWS_DEFAULT_REGION: "ca-central-1"
+          IMAGE_URI: "xxxxxxxx.dkr.ecr.ca-central-1.amazonaws.com/mct:latest"
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+        script: |
+          docker push $IMAGE_URI
+
+      - name: Deploy to EKS
+        uses: "actions/aws/kubectl@master"
+        needs: "Push ECR"
+        env:
+          AWS_DEFAULT_REGION: "ca-central-1"
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        args: "apply -f yml/app-deploy.yaml"  
+
+      - name: Verify EKS Deployment
+        uses: "actions/aws/kubectl@master"
+        needs: "Deploy to EKS"
+        env:
+          AWS_DEFAULT_REGION: "ca-central-1"
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        args: "get all"
+      
+      - name: SNS Notification
+        uses: "actions/aws/cli@51b5c9b60da75d1d3f97ff91ed2e4efc19dd5474"
+        needs: "Verify EKS Deployment"
+        env:
+          AWS_DEFAULT_REGION: "ca-central-1"
+          SNS_TOPIC_ARN: "arn:aws:sns:ap-northeast-1:xxxxxxxx:SNS2IM"
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+        script: |
+          aws --region ca-central-1 sns publish --topic-arn $SNS_TOPIC_ARN --message '[OK] Deploy completed'
+ 
