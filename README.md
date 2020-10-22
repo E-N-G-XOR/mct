@@ -19,7 +19,8 @@
    
       deploy_registry.sh
 
-   3. Run the docker build command with the docker file in the app folder to built a hello App.
+   3. Run the docker build command with the docker file in the app folder to built 
+      a hello App.
    
       docker build -t mct-web:v1 .  
       
@@ -86,14 +87,16 @@
    
    ###4. Make sure tags are different and reflect code changes - there is an easy way to tie image tag with code revision.
 
-      Normally a Short hash is used for the taging so we can link code commits to a partical image being built. The script "push_image - v2.sh" is an example of this.
+      Normally a Short hash is used for the taging so we can link code commits to a partical image 
+      being built. The script "push_image - v2.sh" is an example of this.
    
    ###5. Make one more code change and push another tag.
    
 
    ###6. Write another script that queries the docker repo and returns latest image tag.
 
-      The script "get_latest_tag.sh" is an example of this based on a numbered tag, we can sort for the highest value. When using hashing tags, it's a bit more complicated to do....
+      The script "get_latest_tag.sh" is an example of this based on a numbered tag, we can sort for 
+      the highest value. When using hashing tags, it's a bit more complicated to do....
    
    ###7. Document in a README.md file your image tagging scheme.
 
@@ -107,7 +110,8 @@
    
    ###10. Then create the means of deployment of your image to said infrastructure. For example, if you were using kubernetes, helm could be used to install your image to the cluster.
 
-      I would use a github actin to deploy the code, I have one which I use that is included in the "yml" folder. 
+      I would use a github actin to deploy the code, I have one which I use that is 
+      included in the "yml" folder. 
          There are two actions: 
            1. eks.yml - It uses terraform cloud to deploy terraform code to AWS.
            2. aws-deploy.yml, which will build our image and push to the cluster.
@@ -128,7 +132,7 @@
 
    ###Can you explain a CI pipeline you have worked on and the challenges you faced and how you overcame them?
 
-   A explanation on the pipeline I rebuilt can be found in the docs folder.  "docs/pipeline.txt"
+      A explanation on the pipeline I rebuilt can be found in the docs folder.  "docs/pipeline.txt"
 
 
  
